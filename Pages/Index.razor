@@ -1,0 +1,22 @@
+﻿@page "/"
+@inject HttpClient Http 
+<h1>Inscripciones</h1>
+
+Bienvenido al sistema de inscripciones.
+
+<SurveyPrompt Title="Tienes alguna duda?" />
+
+<div>
+
+</div>
+
+@code {
+    List<Alumno> alumnos;
+    List<Taller> talleres;
+
+    protected override async Task OnInitializedAsync()
+    {
+        alumnos = await Http.GetFromJsonAsync<List<Alumno>>("sample-data/alumnos.json");
+        talleres = await Http.GetFromJsonAsync<List<Taller>>("sample-data/talleres.json");
+    }
+}
