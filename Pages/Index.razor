@@ -5,7 +5,7 @@
 <div>
     @if (alumnos == null)
     {
-        <p><em>Cargando...</em></p>
+        <p><em>Cargando..</em></p>
     }
     else
     {
@@ -38,6 +38,7 @@
 </div>
 <div>
     <button class="btn btn-primary" @onclick="GuardarInscripcion">Inscribir Alumno</button>
+    <button class="btn btn-secondary" @onclick="CrearReporte">Ver Reporte</button>
 </div>
 
 @if (inscripciones == null)
@@ -66,11 +67,38 @@ else
         </tbody>
     </table>
 }
+<div>
+    @if (reportes.Count == 0)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Alumno</th>
+                    <th>Taller</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var reporte in reportes)
+                {
+                    <tr>
+                        <td>@reporte.nombreAlumno</td>
+                        <td>@reporte.nombreTaller</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
 
 @code {
     List<Alumno> alumnos;
     List<Taller> talleres;
     List<Inscripcion> inscripciones = new List<Inscripcion>();
+    List<Reporte> reportes = new List<Reporte>();
 
     string codigoTaller;
     string dpiAlumno;
@@ -79,7 +107,12 @@ else
     {
         alumnos = await Http.GetFromJsonAsync<List<Alumno>>("sample-data/alumnos.json");
         talleres = await Http.GetFromJsonAsync<List<Taller>>("sample-data/talleres.json");
-        //inscripciones = await localStorage.GetItemAsync<List<Inscripcion>>("inscripciones");
+        inscripciones = await localStorage.GetItemAsync<List<Inscripcion>>("inscripciones");
+
+        if (inscripciones == null)
+        {
+            inscripciones = new List<Inscripcion>();
+        }
     }
 
     protected async Task GuardarInscripcion()
@@ -90,7 +123,21 @@ else
         inscripcion.Fecha = DateTime.Now;
         inscripciones.Add(inscripcion);
 
-        await localStorage.SetItemAsync("inscripciones", "inscripciones");
+        await localStorage.SetItemAsync("inscripciones", inscripciones);
+    }
+
+    protected void CrearReporte()
+    {
+        foreach (var inscripcion in inscripciones)
+        {
+            Alumno alumnoEncontrado = alumnos.Find(a => a.DPI == inscripcion.Dpi);
+            Taller taller = talleres.Find(b => b.IdTaller == inscripcion.Codigo);
+
+            Reporte reporte = new Reporte();
+            reporte.nombreTaller = taller.IdTaller;
+            reporte.nombreAlumno = alumnoEncontrado.Nombre;
+            reportes.Add(reporte);
+        }
     }
 
 }
